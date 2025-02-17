@@ -1,60 +1,68 @@
 package com.BA.java.Service;
 
+import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.BA.java.Model.User;
 import com.BA.java.repository.UserRepository;
 
 @Service
 public class UserService {
-	
-	
+
+	@Autowired
 	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
+	
 
-	
-	
-	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-		this.userRepository= userRepository;
-		this.passwordEncoder= passwordEncoder;
+//	@Autowired
+//	PasswordEncoder passwordEncoder;
+
+	public UserService(UserRepository userRepository) {
+		this.userRepository = userRepository;
+
 	}
+
+	public User updateProfile(User u) {
+//		Optional<User> optionalUser = userRepository.findById(u.getId());
+			return userRepository.save(u);
 	
-	public User updateProfile(Long userId, String name, String email) {
-		Optional<User> optionalUser =userRepository.findById(userId);
-		if(optionalUser.isPresent()) {
+	}
+
+	public String changePassword(Long id, String oldPassword, String newPassword) {
+		Optional<User> optionalUser = userRepository.findById(id);
+		if (optionalUser.isPresent()) {
 			User user = optionalUser.get();
-			User.setName(name);
-			User.setEmail(email);
-			return userRepository.save(user);
-		}
-		throw new RuntimeException("User not found");
-	}
-
-	public String changePassword(Long userId, String oldPassword, String newPassword) {
-		Optional<User> optionalUser =userRepository.findById(userId);
-		if(optionalUser.isPresent()) {
-			User user =optionalUser.get();
-			if(passwordEncoder.matches(oldPassword, user.getPassword())) {
-				user.setPassword(passwordEncoder.encode(newPassword));
-				userRepository.save(user);
+			if(oldPassword.equals(user.getPass())){
+			user.setPass(newPassword);
+			userRepository.save(user);
 				return "Password changed successfully";
 				
 			}else {
 				return "Old password is incorrect";
 			}
-			
+
 	}
-			throw new RuntimeException("User not found");
-		}
-		 public  String deleteAccount(Long userId) {
-			 if(userRepository.existsById(userId)) {
-				 userRepository.deleteById(userId);
-				 return "Account deleted succefully";
-			 }
-			 throw new RuntimeException("User not found");
-		 }
-	
+		throw new RuntimeException("User not found");
+	}
+
+	public String deleteAccount(Long id) {
+	userRepository.deleteById(id);
+	return "user deleted succcessfully";
+	}
+
+	public User registerUser(User user) {
+        // Ensure role is USER
+        // Encode password before saving
+        return userRepository.save(user);
+    }
+
+	public List<User> getUsers() {
+		
+		return userRepository.findAll();
+	}
+
 }
